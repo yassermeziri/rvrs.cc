@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RVRS — From Nothing Into Everything</title>
+<meta name="description" content="RVRS — Algerian streetwear. Cash on delivery, nationwide. From nothing into everything.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Permanent+Marker&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <header id="siteHeader">
+    <a href="index.html" class="logo tag-font">RVRS</a>
+    <nav>
+      <a href="index.html#shop" data-i18n="nav_shop">Shop</a>
+      <a href="index.html#about" data-i18n="nav_about">About</a>
+      <a href="index.html#track" data-i18n="nav_track">Track Order</a>
+      <div class="lang-switch">
+        <button data-lang="en">EN</button>
+        <button data-lang="ar">AR</button>
+      </div>
+      <a href="https://www.instagram.com/rvrs.cc" target="_blank" rel="noopener" class="nav-cta" data-i18n="nav_ig">Instagram</a>
+    </nav>
+    <button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button>
+  </header>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html#shop" data-i18n="nav_shop">Shop</a>
+    <a href="index.html#about" data-i18n="nav_about">About</a>
+    <a href="index.html#track" data-i18n="nav_track">Track Order</a>
+    <a href="https://www.instagram.com/rvrs.cc" target="_blank" rel="noopener" data-i18n="nav_ig">Instagram</a>
+  </div>
+
+  <section class="hero" id="top">
+    <div class="hero-inner" id="heroInner">
+      <div class="hero-eyebrow" data-i18n="hero_eyebrow">CLOTHING (BRAND) · ALGERIA &amp; BEYOND</div>
+      <h1>
+        REVERSE
+        <span class="tag-font">RVRS</span>
+      </h1>
+      <p data-i18n="hero_p">From nothing into everything.</p>
+    </div>
+    <div class="hero-scroll"><span data-i18n="scroll">SCROLL</span><span class="line"></span></div>
+  </section>
+
+  <div class="manifesto reveal">
+    <div class="kicker" data-i18n="manifesto_kicker">THE PHILOSOPHY</div>
+    <blockquote><span data-i18n="manifesto_l1">From nothing into everything.</span><br><span data-i18n="manifesto_l2">No shortcuts.</span></blockquote>
+  </div>
+
+  <section id="shop">
+    <div class="shop-grid" id="shopGrid"><!-- product rows rendered by JS from ProductsStore --></div>
+  </section>
+
+  <div class="trust reveal">
+    <div class="trust-item">
+      <div class="num" data-i18n="trust1_n">58</div>
+      <div class="lbl" data-i18n="trust1_l">Wilayas covered — cash on delivery, nationwide.</div>
+    </div>
+    <div class="trust-item">
+      <div class="num" data-i18n="trust2_n">2–5</div>
+      <div class="lbl" data-i18n="trust2_l">Days average delivery time, door to door.</div>
+    </div>
+    <div class="trust-item">
+      <div class="num" data-i18n="trust3_n">0 DZD</div>
+      <div class="lbl" data-i18n="trust3_l">Upfront. You only pay when your order's in hand.</div>
+    </div>
+  </div>
+
+  <div class="cta-block reveal" id="about">
+    <h2 data-i18n="cta_h">Follow the flip side.</h2>
+    <p data-i18n="cta_p">New drops, restocks, and behind-the-scenes — first on Instagram.</p>
+    <a href="https://www.instagram.com/rvrs.cc" target="_blank" rel="noopener" class="ig-pill" data-i18n="cta_ig">@rvrs.cc on Instagram →</a>
+  </div>
+
+  <footer id="track">
+    <div class="f-brand">
+      <div class="logo tag-font">RVRS</div>
+      <p data-i18n="footer_tagline">From nothing into everything.</p>
+    </div>
+    <div class="f-col">
+      <h4 data-i18n="footer_shop">SHOP</h4>
+      <ul id="footerShopList"><li><a href="index.html#shop" data-i18n="footer_all">All products</a></li></ul>
+    </div>
+    <div class="f-col">
+      <h4 data-i18n="footer_orders">ORDERS</h4>
+      <ul>
+        <li><a href="index.html#shop" data-i18n="footer_order_cod">Order — Cash on Delivery</a></li>
+        <li><a href="admin.html" data-i18n="footer_admin">Admin dashboard</a></li>
+      </ul>
+    </div>
+    <div class="f-col">
+      <h4 data-i18n="footer_follow">FOLLOW</h4>
+      <ul><li><a href="https://www.instagram.com/rvrs.cc" target="_blank" rel="noopener">Instagram — @rvrs.cc</a></li></ul>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer_rights">© 2026 RVRS. ALL RIGHTS RESERVED.</span>
+      <span data-i18n="footer_note">CASH ON DELIVERY · ALGERIA · PRICES IN DZD</span>
+    </div>
+  </footer>
+
+<script src="js/wilayas.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/products-store.js"></script>
+<script src="js/shipping-store.js"></script>
+<script src="js/store.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

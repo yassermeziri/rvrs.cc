@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — RVRS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Permanent+Marker&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- passcode gate — client-side only, NOT real security. See README. -->
+  <div class="gate" id="gate">
+    <div class="logo tag-font" style="font-size:2rem;">RVRS</div>
+    <p style="color:var(--fg-dim); font-size:0.85rem;">Admin access</p>
+    <input type="password" id="passInput" placeholder="Enter passcode">
+    <button id="gateBtn">Enter</button>
+    <div class="err" id="gateErr"></div>
+  </div>
+
+  <header id="siteHeader" class="scrolled">
+    <a href="index.html" class="logo tag-font">RVRS</a>
+    <nav>
+      <a href="index.html">Site</a>
+      <a href="index.html#shop">Shop</a>
+    </nav>
+  </header>
+
+  <div class="admin-body">
+    <div class="admin-head">
+      <h1>Admin dashboard</h1>
+      <div class="admin-actions">
+        <button class="admin-btn" onclick="location.reload()">Refresh</button>
+      </div>
+    </div>
+
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-tab="orders">Orders</button>
+      <button class="admin-tab" data-tab="products">Products</button>
+      <button class="admin-tab" data-tab="shipping">Shipping prices</button>
+    </div>
+
+    <!-- ===================== ORDERS ===================== -->
+    <div class="admin-panel active" id="panel-orders">
+      <div class="stat-row" id="statRow"></div>
+      <div class="admin-actions" style="margin-bottom:1.2rem;">
+        <button class="admin-btn" id="exportCsv">Export CSV</button>
+        <button class="admin-btn danger" id="clearAll">Clear all orders</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th><th>Product</th><th>Customer</th><th>Wilaya</th><th>Method</th>
+              <th>Size</th><th>Qty</th><th>Total</th><th>Status</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="ordersBody"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="ordersEmpty" style="display:none;">
+        <h3>No orders yet</h3>
+        <p>Orders placed on the site will show up here automatically.</p>
+      </div>
+    </div>
+
+    <!-- ===================== PRODUCTS ===================== -->
+    <div class="admin-panel" id="panel-products">
+      <div class="product-form-wrap">
+        <h3 id="pfTitle">Add a product</h3>
+        <form id="productForm">
+          <input type="hidden" id="pf-id">
+          <div class="field-row">
+            <div class="field"><label>Name (English)</label><input type="text" id="pf-name-en" required></div>
+            <div class="field"><label>Name (Arabic)</label><input type="text" id="pf-name-ar" dir="rtl"></div>
+          </div>
+          <div class="field-row3">
+            <div class="field"><label>Category label</label><input type="text" id="pf-eyebrow" placeholder="e.g. 05 — CAP"></div>
+            <div class="field"><label>Price (DZD)</label><input type="number" id="pf-price" required></div>
+            <div class="field"><label>Old price (optional)</label><input type="number" id="pf-oldprice"></div>
+          </div>
+          <div class="field"><label>Description (English)</label><textarea id="pf-desc-en" required></textarea></div>
+          <div class="field"><label>Description (Arabic)</label><textarea id="pf-desc-ar" dir="rtl"></textarea></div>
+          <div class="field-row">
+            <div class="field"><label>Badges — English (comma-separated)</label><input type="text" id="pf-badges-en" placeholder="e.g. Cotton, Boxy fit"></div>
+            <div class="field"><label>Badges — Arabic (comma-separated)</label><input type="text" id="pf-badges-ar" dir="rtl"></div>
+          </div>
+          <div class="field"><label>Image URLs (comma-separated, first = main photo)</label><textarea id="pf-images" placeholder="https://..., https://..."></textarea></div>
+          <div class="admin-actions">
+            <button type="submit" class="admin-btn" style="background:var(--fg); color:#000;">Save product</button>
+            <button type="button" class="admin-btn" id="pfCancel" style="display:none;">Cancel edit</button>
+          </div>
+        </form>
+      </div>
+
+      <h3 style="margin-bottom:1rem;">Current products</h3>
+      <div id="productList"></div>
+    </div>
+
+    <!-- ===================== SHIPPING ===================== -->
+    <div class="admin-panel" id="panel-shipping">
+      <p style="color:var(--fg-dim); font-size:0.85rem; margin-bottom:1.4rem; max-width:640px;">
+        Set the Cash-on-Delivery shipping price for each wilaya, per method. "Home delivery" (à domicile) and "Office pickup" (bureau) usually differ — office pickup is typically cheaper.
+      </p>
+      <div class="admin-actions" style="margin-bottom:1.2rem;">
+        <button class="admin-btn" id="saveShipping" style="background:var(--fg); color:#000;">Save all prices</button>
+        <button class="admin-btn danger" id="resetShipping">Reset to defaults</button>
+      </div>
+      <div class="table-wrap ship-table">
+        <table>
+          <thead><tr><th>Wilaya</th><th>Home delivery (DZD)</th><th>Office pickup (DZD)</th></tr></thead>
+          <tbody id="shippingBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+<script src="js/wilayas.js"></script>
+<script src="js/products-store.js"></script>
+<script src="js/shipping-store.js"></script>
+<script src="js/store.js"></script>
+<script>
+  /* ---------- PASSCODE GATE ----------
+     Client-side only — good enough to keep casual visitors out,
+     NOT real security. Change PASSCODE below. For real protection,
+     put this page behind server auth or a private host. */
+  const PASSCODE = 'rvrs2026';
+  const gate = document.getElementById('gate');
+  if (sessionStorage.getItem('rvrs_admin_ok') === '1') gate.style.display = 'none';
+  document.getElementById('gateBtn').addEventListener('click', tryEnter);
+  document.getElementById('passInput').addEventListener('keydown', e => { if (e.key === 'Enter') tryEnter(); });
+  function tryEnter() {
+    const val = document.getElementById('passInput').value;
+    if (val === PASSCODE) {
+      sessionStorage.setItem('rvrs_admin_ok', '1');
+      gate.style.display = 'none';
+    } else {
+      document.getElementById('gateErr').textContent = 'Incorrect passcode.';
+    }
+  }
+
+  /* ---------- TABS ---------- */
+  document.querySelectorAll('.admin-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  const fmt = n => Number(n).toLocaleString('fr-FR') + ' DZD';
+
+  /* =========================================================
+     ORDERS
+     ========================================================= */
+  function renderOrders() {
+    const orders = RVRSStore.getOrders();
+    const body = document.getElementById('ordersBody');
+    const empty = document.getElementById('ordersEmpty');
+    empty.style.display = orders.length ? 'none' : 'block';
+    body.innerHTML = orders.map(o => `
+      <tr>
+        <td>${new Date(o.createdAt).toLocaleDateString('fr-FR')}<br><span class="cell-phone">${new Date(o.createdAt).toLocaleTimeString('fr-FR')}</span></td>
+        <td class="cell-name">${o.product}</td>
+        <td>${o.fullName}<br><span class="cell-phone">${o.phone}</span></td>
+        <td>${o.wilaya || ''}</td>
+        <td>${o.method === 'bureau' ? 'Office' : 'Home'}</td>
+        <td>${o.size}</td>
+        <td>${o.qty}</td>
+        <td class="cell-total">${fmt(o.total)}</td>
+        <td>
+          <select class="status-select" data-status="${o.status}" onchange="setStatus('${o.id}', this.value)">
+            ${['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'].map(s => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s[0].toUpperCase() + s.slice(1)}</option>`).join('')}
+          </select>
+        </td>
+        <td><button class="row-delete" onclick="delOrder('${o.id}')">Delete</button></td>
+      </tr>
+    `).join('');
+
+    const pending = orders.filter(o => o.status === 'pending');
+    const stat = document.getElementById('statRow');
+    stat.innerHTML = `
+      <div class="stat-card"><div class="n">${orders.length}</div><div class="l">Total orders</div></div>
+      <div class="stat-card"><div class="n">${pending.length}</div><div class="l">Pending confirmation</div></div>
+      <div class="stat-card"><div class="n">${fmt(orders.reduce((s, o) => s + Number(o.total), 0))}</div><div class="l">Total order value</div></div>
+      <div class="stat-card"><div class="n">${fmt(pending.reduce((s, o) => s + Number(o.total), 0))}</div><div class="l">Pending value</div></div>
+    `;
+  }
+  window.setStatus = (id, status) => { RVRSStore.updateStatus(id, status); renderOrders(); };
+  window.delOrder = (id) => { if (confirm('Delete this order?')) { RVRSStore.deleteOrder(id); renderOrders(); } };
+  document.getElementById('exportCsv').addEventListener('click', () => RVRSStore.exportCSV());
+  document.getElementById('clearAll').addEventListener('click', () => {
+    if (confirm('Delete ALL orders? This cannot be undone.')) { RVRSStore.clearAll(); renderOrders(); }
+  });
+  renderOrders();
+
+  /* =========================================================
+     PRODUCTS
+     ========================================================= */
+  function renderProducts() {
+    const products = ProductsStore.getAll();
+    document.getElementById('productList').innerHTML = products.map(p => `
+      <div class="product-list-item">
+        <img src="${p.images[0]}" alt="">
+        <div class="pli-info">
+          <div class="n">${p.name_en}</div>
+          <div class="p">${fmt(p.price)}${p.oldPrice ? ' · was ' + fmt(p.oldPrice) : ''} · ${p.eyebrow || ''}</div>
+        </div>
+        <div class="pli-actions">
+          <button class="admin-btn" onclick="editProduct('${p.id}')">Edit</button>
+          <button class="admin-btn danger" onclick="deleteProductRow('${p.id}')">Delete</button>
+        </div>
+      </div>
+    `).join('');
+  }
+  renderProducts();
+
+  const productForm = document.getElementById('productForm');
+  window.editProduct = (id) => {
+    const p = ProductsStore.getById(id);
+    if (!p) return;
+    document.getElementById('pf-id').value = p.id;
+    document.getElementById('pf-name-en').value = p.name_en;
+    document.getElementById('pf-name-ar').value = p.name_ar || '';
+    document.getElementById('pf-eyebrow').value = p.eyebrow || '';
+    document.getElementById('pf-price').value = p.price;
+    document.getElementById('pf-oldprice').value = p.oldPrice || '';
+    document.getElementById('pf-desc-en').value = p.desc_en;
+    document.getElementById('pf-desc-ar').value = p.desc_ar || '';
+    document.getElementById('pf-badges-en').value = (p.badges_en || []).join(', ');
+    document.getElementById('pf-badges-ar').value = (p.badges_ar || []).join(', ');
+    document.getElementById('pf-images').value = (p.images || []).join(', ');
+    document.getElementById('pfTitle').textContent = 'Edit product';
+    document.getElementById('pfCancel').style.display = 'inline-block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  window.deleteProductRow = (id) => {
+    if (confirm('Delete this product? This cannot be undone.')) { ProductsStore.deleteProduct(id); renderProducts(); }
+  };
+  document.getElementById('pfCancel').addEventListener('click', () => { productForm.reset(); document.getElementById('pf-id').value = ''; document.getElementById('pfTitle').textContent = 'Add a product'; document.getElementById('pfCancel').style.display = 'none'; });
+
+  productForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const splitList = (v) => v.split(',').map(s => s.trim()).filter(Boolean);
+    const product = {
+      id: document.getElementById('pf-id').value || undefined,
+      name_en: document.getElementById('pf-name-en').value,
+      name_ar: document.getElementById('pf-name-ar').value,
+      eyebrow: document.getElementById('pf-eyebrow').value,
+      price: Number(document.getElementById('pf-price').value),
+      oldPrice: document.getElementById('pf-oldprice').value ? Number(document.getElementById('pf-oldprice').value) : null,
+      desc_en: document.getElementById('pf-desc-en').value,
+      desc_ar: document.getElementById('pf-desc-ar').value,
+      badges_en: splitList(document.getElementById('pf-badges-en').value),
+      badges_ar: splitList(document.getElementById('pf-badges-ar').value),
+      images: splitList(document.getElementById('pf-images').value)
+    };
+    if (!product.images.length) product.images = ['https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1000&auto=format&fit=crop'];
+    ProductsStore.save(product);
+    productForm.reset();
+    document.getElementById('pf-id').value = '';
+    document.getElementById('pfTitle').textContent = 'Add a product';
+    document.getElementById('pfCancel').style.display = 'none';
+    renderProducts();
+  });
+
+  /* =========================================================
+     SHIPPING PRICES
+     ========================================================= */
+  function renderShippingTable() {
+    const all = ShippingStore.getAll();
+    document.getElementById('shippingBody').innerHTML = WILAYAS.map(w => {
+      const row = all[w.c] || { domicile: 0, bureau: 0 };
+      return `
+        <tr>
+          <td>${w.c} — ${w.en}</td>
+          <td><input type="number" data-code="${w.c}" data-method="domicile" value="${row.domicile}"></td>
+          <td><input type="number" data-code="${w.c}" data-method="bureau" value="${row.bureau}"></td>
+        </tr>
+      `;
+    }).join('');
+  }
+  renderShippingTable();
+
+  document.getElementById('saveShipping').addEventListener('click', () => {
+    const map = ShippingStore.getAll();
+    document.querySelectorAll('#shippingBody input').forEach(inp => {
+      const code = inp.dataset.code, method = inp.dataset.method;
+      if (!map[code]) map[code] = { domicile: 0, bureau: 0 };
+      map[code][method] = Number(inp.value) || 0;
+    });
+    ShippingStore.saveAll(map);
+    showSavedToast();
+  });
+  document.getElementById('resetShipping').addEventListener('click', () => {
+    if (confirm('Reset all shipping prices to defaults?')) { ShippingStore.resetToDefaults(); renderShippingTable(); }
+  });
+
+  function showSavedToast() {
+    let t = document.getElementById('toast');
+    if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; document.body.appendChild(t); }
+    t.textContent = 'Saved ✓';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
+</script>
+</body>
+</html>
